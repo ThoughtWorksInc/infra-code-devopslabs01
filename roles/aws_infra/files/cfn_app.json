@@ -1,0 +1,213 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Adds one application server instance in each AZ that this project has private subnets in with a load balancer in front of them, sitting on the public subnet",
+  "Resources": {
+    "Instance1": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "KeyName": "devopslabs01",
+        "ImageId": "ami-b73b63a0",
+        "InstanceType": "t2.micro",
+        "SubnetId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "vpc-model-01-${AWS::Region}-PRIVSUBNET1ID"
+          }
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "AppSshSg"
+          },{
+            "Ref": "AppHttpSg"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "app"
+          }
+        ]
+      }
+    },
+    "Instance2": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "KeyName": "devopslabs01",
+        "ImageId": "ami-b73b63a0",
+        "InstanceType": "t2.micro",
+        "SubnetId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "vpc-model-01-${AWS::Region}-PRIVSUBNET2ID"
+          }
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "AppSshSg"
+          },{
+            "Ref": "AppHttpSg"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "app"
+          }
+        ]
+      }
+    },
+    "AppSshSg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls SSH connections",
+        "VpcId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "vpc-model-01-${AWS::Region}-VPCID"
+          }
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 22,
+            "ToPort": 22,
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    },
+    "AppHttpSg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls app access",
+        "VpcId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "vpc-model-01-${AWS::Region}-VPCID"
+          }
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 8080,
+            "ToPort": 8080,
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    },
+    "LoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "Instances": [
+          {
+            "Ref": "Instance1"
+          },
+          {
+            "Ref": "Instance2"
+          }
+        ],
+        "Listeners": [
+          {
+            "InstancePort": "8080",
+            "InstanceProtocol": "TCP",
+            "LoadBalancerPort": "80",
+            "Protocol": "TCP"
+          }
+        ],
+        "Scheme": "internet-facing",
+        "SecurityGroups": [
+          {
+            "Ref": "LoadBalancerSg"
+          }
+        ],
+        "Subnets": [
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": "vpc-model-01-${AWS::Region}-PUBSUBNET1ID"
+            }
+          },
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": "vpc-model-01-${AWS::Region}-PUBSUBNET2ID"
+            }
+          }
+        ]
+      }
+    },
+    "LoadBalancerSg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "External access to the LoadBalancer",
+        "VpcId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "vpc-model-01-${AWS::Region}-VPCID"
+          }
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 80,
+            "ToPort": 80,
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "Instance1Id": {
+      "Description": "Instance ID",
+      "Value": {
+        "Ref": "Instance1"
+      }
+    },
+    "Instance2Id": {
+      "Description": "Instance ID",
+      "Value": {
+        "Ref": "Instance2"
+      }
+    },
+    "AvailabilityZoneInstance1": {
+      "Description": "Datacenter Location",
+      "Value": {
+        "Fn::GetAtt": [
+          "Instance1",
+          "AvailabilityZone"
+        ]
+      }
+    },
+    "AvailabilityZoneInstance2": {
+      "Description": "Datacenter Location",
+      "Value": {
+        "Fn::GetAtt": [
+          "Instance2",
+          "AvailabilityZone"
+        ]
+      }
+    },
+    "PrivateIpInstance1": {
+      "Description": "Internal address",
+      "Value": {
+        "Fn::GetAtt": [
+          "Instance1",
+          "PrivateIp"
+        ]
+      }
+    },
+    "PrivateIpInstance2": {
+      "Description": "Internal address",
+      "Value": {
+        "Fn::GetAtt": [
+          "Instance2",
+          "PrivateIp"
+        ]
+      }
+    },
+    "LoadBalancer": {
+      "Description": "Load Balancer Public Name",
+      "Value": {
+        "Fn::GetAtt": [
+          "LoadBalancer",
+          "DNSName"
+        ]
+      }      
+    }
+  }
+}

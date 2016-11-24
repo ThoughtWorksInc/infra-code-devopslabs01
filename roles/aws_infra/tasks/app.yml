@@ -1,0 +1,17 @@
+---
+- name: create two application servers instances and its loadbalancer
+  cloudformation:
+    stack_name: app
+    state: present
+    region: us-east-1
+    template: roles/aws_infra/files/cfn_app.json
+    tags:
+      Environment: test
+  register: stack
+
+- name: cfn app result
+  debug: var=stack.output
+
+- name: cfn app outputs
+  debug: var=stack.stack_outputs
+

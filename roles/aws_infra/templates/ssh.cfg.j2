@@ -1,0 +1,16 @@
+Host 10.34.*
+  ProxyCommand ssh -i /iac/key.pem -o "StrictHostKeyChecking no" ec2-user@{{ bastion_fqdn }} -W %h:%p
+  User ec2-user
+  IdentityFile /iac/key.pem
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+
+Host {{ bastion_fqdn }}
+  Hostname {{ bastion_fqdn }}
+  User ec2-user
+  IdentityFile /iac/key.pem
+  ControlMaster auto
+  ControlPath ~/.ssh/ansible-%r@%h:%p
+  ControlPersist 5m
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no

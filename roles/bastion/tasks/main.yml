@@ -1,0 +1,4 @@
+---
+- name: placeholder - bastion hardening
+  debug:
+    msg: placeholder

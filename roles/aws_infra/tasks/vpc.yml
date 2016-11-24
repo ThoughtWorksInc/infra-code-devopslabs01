@@ -1,0 +1,25 @@
+---
+- name: setup network in AWS
+  cloudformation:
+    stack_name: vpc-model-01
+    state: present
+    region: us-east-1
+    template: roles/aws_infra/files/cfn_vpc.json
+    tags:
+      Environment: test
+    template_parameters:
+      # i.e.: aws ec2 describe-availability-zones --region us-east-1
+      AvailabilityZones: "us-east-1c,us-east-1d"
+      NumberOfAZs: 2
+      VPCCIDR: 10.34.0.0/20
+      PrivateSubnet1CIDR: 10.34.0.0/22
+      PublicSubnet1CIDR: 10.34.4.0/22      
+      PrivateSubnet2CIDR: 10.34.8.0/22
+      PublicSubnet2CIDR: 10.34.12.0/22
+  register: stack
+
+- name: cfn vpc result
+  debug: var=stack.output
+
+- name: cfn vpc outputs
+  debug: var=stack.stack_outputs

@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - role: aws_infra
+
+- hosts: tag_Name_bastion
+  roles:
+    - bastion
+
+- hosts: tag_Name_app
+  become: yes
+  roles:
+    - app_server

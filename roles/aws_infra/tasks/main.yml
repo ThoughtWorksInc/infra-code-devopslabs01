@@ -1,0 +1,4 @@
+---
+- include: vpc.yml
+- include: bastion.yml
+- include: app.yml

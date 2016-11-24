@@ -1,0 +1,84 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Adds bastion host to the public subnets allowing ssh acces to the instances on private subnets.",
+  "Resources": {
+    "Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "KeyName": "devopslabs01",
+        "ImageId": "ami-b73b63a0",
+        "InstanceType": "t2.micro",
+        "SubnetId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "vpc-model-01-${AWS::Region}-PUBSUBNET1ID"
+          }
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "BastionSshSg"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "bastion"
+          }
+        ]
+      }
+    },
+    "BastionSshSg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Front door for SSH connections",
+        "VpcId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "vpc-model-01-${AWS::Region}-VPCID"
+          }
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 22,
+            "ToPort": 22,
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "InstanceId": {
+      "Description": "Instance ID",
+      "Value": {
+        "Ref": "Instance"
+      }
+    },
+    "AvailabilityZone": {
+      "Description": "Datacenter Location",
+      "Value": {
+        "Fn::GetAtt": [
+          "Instance",
+          "AvailabilityZone"
+        ]
+      }
+    },
+    "PublicDnsName": {
+      "Description": "Internet resolvable name",
+      "Value": {
+        "Fn::GetAtt": [
+          "Instance",
+          "PublicDnsName"
+        ]
+      }
+    },
+    "PublicIp": {
+      "Description": "Internet reachable address",
+      "Value": {
+        "Fn::GetAtt": [
+          "Instance",
+          "PublicIp"
+        ]
+      }
+    }
+  }
+}

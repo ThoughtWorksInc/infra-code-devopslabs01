@@ -1,0 +1,33 @@
+---
+- name: create bastion instance and its related resources
+  cloudformation:
+    stack_name: bastion
+    state: present
+    region: us-east-1
+    template: roles/aws_infra/files/cfn_bastion.json
+    tags:
+      Environment: test
+  register: stack
+
+- name: cfn bastion result
+  debug: var=stack.output
+
+- name: cfn bastion outputs
+  debug: var=stack.stack_outputs
+
+- name: register bastion host FQDN for ansible ssh configuration
+  set_fact:
+    bastion_fqdn: "{{ stack.stack_outputs.PublicDnsName }}"
+
+- name: configure build-container's ssh to use bastion host
+  template:
+    src: ssh.cfg.j2
+    dest: /iac/ssh.cfg
+
+- name: Wait for ssh port to be available
+  wait_for:
+    port: 22
+    host: "{{ stack.stack_outputs.PublicDnsName }}"
+
+
+
