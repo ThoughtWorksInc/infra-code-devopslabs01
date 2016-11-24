@@ -5,6 +5,7 @@ RUN pip install awscli
 
 WORKDIR /iac
 COPY entrypoint.sh entrypoint.sh
+COPY cfn_example.json cfn_example.json
 
 ENTRYPOINT ["./entrypoint.sh"]
 

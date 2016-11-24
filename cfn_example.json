@@ -1,0 +1,76 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "single instance example stack.",
+  "Resources": {
+    "Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "KeyName": "devopslabs01",
+        "ImageId": "ami-b73b63a0",
+        "InstanceType": "t2.micro",
+        "SubnetId": "subnet-4300ca7f",
+        "SecurityGroupIds": [
+          {
+            "Ref": "ExampleSshSg"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "example"
+          }
+        ]
+      }
+    },
+    "ExampleSshSg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SSH connections",
+        "VpcId": "vpc-67ad4d01",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 22,
+            "ToPort": 22,
+            "IpProtocol": "tcp"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "InstanceId": {
+      "Description": "Instance ID",
+      "Value": {
+        "Ref": "Instance"
+      }
+    },
+    "AvailabilityZone": {
+      "Description": "Datacenter Location",
+      "Value": {
+        "Fn::GetAtt": [
+          "Instance",
+          "AvailabilityZone"
+        ]
+      }
+    },
+    "PublicDnsName": {
+      "Description": "Internet resolvable name",
+      "Value": {
+        "Fn::GetAtt": [
+          "Instance",
+          "PublicDnsName"
+        ]
+      }
+    },
+    "PublicIp": {
+      "Description": "Internet reachable address",
+      "Value": {
+        "Fn::GetAtt": [
+          "Instance",
+          "PublicIp"
+        ]
+      }
+    }
+  }
+}
