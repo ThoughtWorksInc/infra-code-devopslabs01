@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: instala java 1.8
+    yum:
+      name: java-1.8.0-openjdk
+      state: installed
+
+  - name: remove java 1.7
+    yum:
+      name: java-1.7.0-openjdk
+      state: absent
